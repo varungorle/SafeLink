@@ -1,20 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import PageLayout from "../components/PageLayout";
 
-function Volunteer() {
+import {
+Users,
+Plus,
+ShieldCheck
+} from "lucide-react";
 
-const [name,setName]=useState("");
+import {
+saveVolunteer,
+subscribeVolunteers
+} from "../services/volunteerService";
 
-const [phone,setPhone]=useState("");
+function Volunteer(){
 
-const [available,setAvailable]=
-useState(true);
+const [name,setName] =
+useState("");
 
-const [volunteers,setVolunteers]=
+const [phone,setPhone] =
+useState("");
+
+const [status,setStatus] =
+useState("Available");
+
+const [volunteers,setVolunteers] =
 useState([]);
 
-const addVolunteer=()=>{
+useEffect(()=>{
+
+const unsubscribe =
+
+subscribeVolunteers(
+
+(data)=>{
+
+setVolunteers(data);
+
+}
+
+);
+
+return ()=>unsubscribe();
+
+},[]);
+
+const addVolunteer =
+async()=>{
 
 if(!name || !phone){
 
@@ -24,45 +56,18 @@ return;
 
 }
 
-const volunteer={
-
-id:Date.now(),
+await saveVolunteer({
 
 name,
-
 phone,
+status
 
-status:
-
-available
-
-?
-
-"Available"
-
-:
-
-"Offline"
-
-};
-
-setVolunteers(
-
-[
-
-...volunteers,
-
-volunteer
-
-]
-
-);
+});
 
 setName("");
-
 setPhone("");
 
-setAvailable(true);
+alert("Volunteer Added");
 
 };
 
@@ -72,51 +77,33 @@ return(
 
 title="Volunteer Network"
 
-subtitle="Community rescue volunteers."
+subtitle="Realtime volunteer emergency response system."
 
 >
-
-<div className="grid lg:grid-cols-2 gap-10">
 
 {/* FORM */}
 
-<div
+<div className="max-w-3xl mx-auto bg-[#0f172a] border border-gray-800 rounded-[35px] p-8 mb-12">
 
-className="bg-[#0f172a]
-p-8
-rounded-3xl"
+<h2 className="text-4xl font-black text-center mb-8">
 
->
-
-<h2
-
-className="text-3xl
-font-black
-mb-6"
-
->
-
-Become Volunteer
+Add Volunteer
 
 </h2>
+
+<div className="space-y-5">
 
 <input
 
 value={name}
 
 onChange={(e)=>
-
 setName(e.target.value)
-
 }
 
-placeholder="Name"
+placeholder="Volunteer Name"
 
-className="w-full
-p-4
-rounded-xl
-bg-[#020617]
-mb-4"
+className="w-full bg-[#020617] border border-gray-700 rounded-2xl px-5 py-4 outline-none focus:border-pink-500"
 
 />
 
@@ -125,143 +112,172 @@ mb-4"
 value={phone}
 
 onChange={(e)=>
-
 setPhone(e.target.value)
-
 }
 
 placeholder="Phone Number"
 
-className="w-full
-p-4
-rounded-xl
-bg-[#020617]
-mb-6"
+className="w-full bg-[#020617] border border-gray-700 rounded-2xl px-5 py-4 outline-none focus:border-pink-500"
 
 />
 
-<label
+<select
 
-className="flex
-gap-3
-mb-6"
+value={status}
+
+onChange={(e)=>
+setStatus(e.target.value)
+}
+
+className="w-full bg-[#020617] border border-gray-700 rounded-2xl px-5 py-4 outline-none focus:border-pink-500"
 
 >
 
-<input
+<option>
 
-type="checkbox"
+Available
 
-checked={available}
+</option>
 
-onChange={()=>
+<option>
 
-setAvailable(
+On Rescue
 
-!available
+</option>
 
-)
+<option>
 
-}
+Offline
 
-/>
+</option>
 
-Available For Rescue
-
-</label>
+</select>
 
 <button
 
 onClick={addVolunteer}
 
-className="bg-pink-500
-w-full
-py-4
-rounded-2xl
-font-bold"
+className="w-full bg-pink-500 hover:bg-pink-600 transition py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3"
 
 >
 
-Register Volunteer
+<Plus size={22}/>
+
+Add Volunteer
 
 </button>
 
 </div>
 
-{/* LIST */}
+</div>
 
-<div>
+{/* VOLUNTEERS */}
 
-<h2
-
-className="text-3xl
-font-black
-mb-6"
-
->
-
-Community Volunteers
-
-</h2>
-
-<div
-
-className="space-y-5"
-
->
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
 {
 
-volunteers.map(
+volunteers.length > 0 ?
 
-(item)=>(
+(
+
+volunteers.map((volunteer,index)=>(
 
 <div
 
-key={item.id}
+key={index}
 
-className="bg-[#0f172a]
-p-6
-rounded-3xl"
+className="bg-[#0f172a] border border-gray-800 rounded-[35px] p-8"
 
 >
 
-<h3
+<div className="flex items-center justify-between">
 
-className="text-2xl
-font-bold"
+<div>
 
->
+<h2 className="text-3xl font-black">
 
-{item.name}
+{volunteer.name}
 
-</h3>
+</h2>
 
-<p>
+<p className="text-gray-400 mt-3">
 
-{item.phone}
+{volunteer.phone}
 
 </p>
 
-<p
+</div>
 
-className={
+<div className="w-16 h-16 rounded-2xl bg-pink-500/20 flex items-center justify-center">
 
-item.status==="Available"
+<Users
 
-?
+size={30}
 
-"text-green-400"
+className="text-pink-500"
+
+/>
+
+</div>
+
+</div>
+
+<div className="mt-8 flex items-center justify-between">
+
+<div className="flex items-center gap-3">
+
+<ShieldCheck
+
+className="text-green-400"
+
+/>
+
+<p className="text-lg">
+
+{volunteer.status}
+
+</p>
+
+</div>
+
+<div className="bg-green-500/20 text-green-400 px-4 py-2 rounded-2xl font-bold">
+
+ACTIVE
+
+</div>
+
+</div>
+
+</div>
+
+))
+
+)
 
 :
 
-"text-gray-400"
+(
 
-}
+<div className="col-span-3 flex flex-col items-center justify-center py-24">
 
->
+<Users
 
-{item.status}
+size={80}
+
+className="text-gray-500"
+
+/>
+
+<h2 className="text-4xl font-black mt-8">
+
+No Volunteers
+
+</h2>
+
+<p className="text-gray-400 mt-4 text-lg">
+
+No volunteers available yet.
 
 </p>
 
@@ -269,13 +285,7 @@ item.status==="Available"
 
 )
 
-)
-
 }
-
-</div>
-
-</div>
 
 </div>
 

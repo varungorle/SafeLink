@@ -8,7 +8,7 @@ onSnapshot
 
 import { db } from "../firebase/config";
 
-export const saveEmergency =
+export const saveVolunteer =
 async(data)=>{
 
 try{
@@ -17,7 +17,7 @@ await addDoc(
 
 collection(
 db,
-"emergencies"
+"volunteers"
 ),
 
 {
@@ -39,14 +39,14 @@ console.log(error);
 
 };
 
-export const subscribeEmergencies =
+export const subscribeVolunteers =
 (callback)=>{
 
 const q = query(
 
 collection(
 db,
-"emergencies"
+"volunteers"
 ),
 
 orderBy(
@@ -62,7 +62,7 @@ q,
 
 (snapshot)=>{
 
-const emergencies =
+const volunteers =
 snapshot.docs.map(
 
 (doc)=>({
@@ -75,7 +75,7 @@ id:doc.id,
 
 );
 
-callback(emergencies);
+callback(volunteers);
 
 }
 

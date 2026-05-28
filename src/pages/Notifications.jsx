@@ -1,18 +1,38 @@
+import { useEffect, useState } from "react";
+
 import PageLayout from "../components/PageLayout";
+
+import {
+Bell,
+AlertTriangle
+} from "lucide-react";
+
+import {
+subscribeNotifications
+} from "../services/notificationService";
 
 function Notifications(){
 
-const alerts=[
+const [notifications,setNotifications] =
+useState([]);
 
-"Heavy Rain Alert",
+useEffect(()=>{
 
-"Nearby NGO Volunteer Available",
+const unsubscribe =
 
-"Community Safety Update",
+subscribeNotifications(
 
-"Accident Reported Nearby"
+(data)=>{
 
-];
+setNotifications(data);
+
+}
+
+);
+
+return ()=>unsubscribe();
+
+},[]);
 
 return(
 
@@ -20,31 +40,109 @@ return(
 
 title="Notifications"
 
-subtitle="Community safety alerts"
+subtitle="Realtime emergency and community notifications."
 
 >
 
-<div className="space-y-5">
+<div className="grid grid-cols-1 gap-8">
 
 {
 
-alerts.map(
+notifications.length > 0 ?
 
-(alert,index)=>(
+(
+
+notifications.map((item,index)=>(
 
 <div
 
 key={index}
 
-className="bg-[#0f172a] p-6 rounded-3xl"
+className="bg-[#0f172a] border border-gray-800 rounded-[35px] p-8"
 
 >
 
-⚠ {alert}
+<div className="flex items-start gap-5">
+
+<div className="w-16 h-16 rounded-2xl bg-red-500/20 flex items-center justify-center">
+
+<AlertTriangle
+
+size={32}
+
+className="text-red-400"
+
+/>
 
 </div>
 
+<div className="flex-1">
+
+<h2 className="text-3xl font-black">
+
+{item.title}
+
+</h2>
+
+<p className="text-gray-400 text-lg mt-3">
+
+{item.message}
+
+</p>
+
+<p className="text-gray-500 mt-5">
+
+{
+
+item.createdAt?.toDate?.()
+
+?.toLocaleString()
+
+||
+
+"Time unavailable"
+
+}
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+))
+
 )
+
+:
+
+(
+
+<div className="flex flex-col items-center justify-center py-24">
+
+<Bell
+
+size={80}
+
+className="text-gray-500"
+
+/>
+
+<h2 className="text-4xl font-black mt-8">
+
+No Notifications
+
+</h2>
+
+<p className="text-gray-400 mt-4 text-lg">
+
+No notifications available yet.
+
+</p>
+
+</div>
 
 )
 

@@ -1,86 +1,31 @@
-import {
-
-useState,
-useEffect
-
-}
-
-from "react";
-
-import {
-
-collection,
-query,
-orderBy,
-onSnapshot
-
-}
-
-from "firebase/firestore";
-
-import {
-
-db
-
-}
-
-from "../firebase/config";
+import { useEffect, useState } from "react";
 
 import PageLayout from "../components/PageLayout";
 
+import {
+MapPin,
+Clock,
+ShieldAlert
+} from "lucide-react";
+
+import {
+subscribeEmergencies
+} from "../services/emergencyService";
+
 function History(){
 
-const [history,setHistory]=
-
+const [emergencies,setEmergencies] =
 useState([]);
 
 useEffect(()=>{
 
-const q=
+const unsubscribe =
 
-query(
+subscribeEmergencies(
 
-collection(
+(data)=>{
 
-db,
-
-"emergencies"
-
-),
-
-orderBy(
-
-"createdAt",
-
-"desc"
-
-)
-
-);
-
-const unsubscribe=
-
-onSnapshot(
-
-q,
-
-(snapshot)=>{
-
-setHistory(
-
-snapshot.docs.map(
-
-(doc)=>({
-
-id:doc.id,
-
-...doc.data()
-
-})
-
-)
-
-);
+setEmergencies(data);
 
 }
 
@@ -96,59 +41,126 @@ return(
 
 title="Emergency History"
 
-subtitle="SOS activity records"
+subtitle="Previous SOS emergency alerts and tracking history."
 
 >
 
-<div className="space-y-5">
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
 {
 
-history.map(
+emergencies.length > 0 ?
 
-(item)=>(
+(
+
+emergencies.map((item,index)=>(
 
 <div
 
-key={item.id}
+key={index}
 
-className="bg-[#0f172a] p-6 rounded-3xl"
+className="bg-[#0f172a] border border-gray-800 rounded-[35px] p-8"
 
 >
 
-<h2 className="text-2xl font-bold">
+<div className="flex items-center justify-between">
+
+<div>
+
+<h2 className="text-3xl font-black">
 
 {item.userName}
 
 </h2>
 
-<p>
+<p className="text-gray-400 mt-2">
 
 {item.email}
 
 </p>
 
-<p>
+</div>
 
-{item.latitude}
-
-</p>
-
-<p>
-
-{item.longitude}
-
-</p>
-
-<p className="text-red-400">
+<div className="bg-red-500/20 text-red-400 px-4 py-2 rounded-2xl font-bold">
 
 {item.status}
+
+</div>
+
+</div>
+
+<div className="mt-8 space-y-5">
+
+<div className="flex items-center gap-4">
+
+<MapPin className="text-pink-500"/>
+
+<p>
+
+{item.latitude},
+{item.longitude}
 
 </p>
 
 </div>
 
+<div className="flex items-center gap-4">
+
+<Clock className="text-yellow-400"/>
+
+<p>
+
+{
+
+item.createdAt?.toDate?.()
+
+?.toLocaleString()
+
+||
+
+"Time unavailable"
+
+}
+
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+))
+
 )
+
+:
+
+(
+
+<div className="col-span-2 flex flex-col items-center justify-center py-24">
+
+<ShieldAlert
+
+size={80}
+
+className="text-gray-500"
+
+/>
+
+<h2 className="text-4xl font-black mt-8">
+
+No Emergency Records
+
+</h2>
+
+<p className="text-gray-400 mt-4 text-lg">
+
+No SOS alerts have been triggered yet.
+
+</p>
+
+</div>
 
 )
 

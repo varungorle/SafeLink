@@ -1,17 +1,124 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
 import PageLayout from "../components/PageLayout";
+
+import {
+Phone,
+MessageCircle,
+Plus
+} from "lucide-react";
+
+import {
+collection,
+addDoc,
+getDocs
+} from "firebase/firestore";
+
+import {
+db,
+auth
+} from "../firebase/config";
 
 function Contacts() {
 
-const [contacts,setContacts]=useState([]);
+const emergencyContacts = [
 
-const [name,setName]=useState("");
+{
+name: "Police",
+phone: "100"
+},
 
-const [phone,setPhone]=useState("");
+{
+name: "Ambulance",
+phone: "108"
+},
 
-const saveContact=()=>{
+{
+name: "Fire Station",
+phone: "101"
+},
 
-if(!name || !phone){
+{
+name: "Women Helpline",
+phone: "1091"
+},
+
+{
+name: "Disaster Management",
+phone: "1070"
+},
+
+{
+name: "Cyber Crime",
+phone: "1930"
+},
+
+{
+name: "Child Helpline",
+phone: "1098"
+}
+
+];
+
+const [contacts, setContacts] =
+useState(emergencyContacts);
+
+const [name, setName] =
+useState("");
+
+const [phone, setPhone] =
+useState("");
+
+useEffect(() => {
+
+loadContacts();
+
+}, []);
+
+const loadContacts = async () => {
+
+try {
+
+const snapshot =
+await getDocs(
+collection(db, "contacts")
+);
+
+const firestoreContacts =
+snapshot.docs
+.map((doc) => ({
+id: doc.id,
+...doc.data()
+}))
+
+.filter(
+(contact) =>
+
+contact.name &&
+contact.phone &&
+contact.name.trim() !== "" &&
+contact.phone.trim() !== ""
+);
+
+setContacts([
+
+...emergencyContacts,
+
+...firestoreContacts
+
+]);
+
+} catch (error) {
+
+console.log(error);
+
+}
+
+};
+
+const addContact = async () => {
+
+if (!name || !phone) {
 
 alert("Fill all fields");
 
@@ -19,49 +126,136 @@ return;
 
 }
 
-setContacts(
+try {
 
-[
+const newContact = {
 
-...contacts,
+name: name.trim(),
 
-{name,phone}
+phone: phone.trim(),
 
-]
+userId:
+auth.currentUser?.uid || "",
 
-);
-
-setName("");
-setPhone("");
+createdAt:
+new Date()
 
 };
 
-return(
+await addDoc(
+
+collection(db, "contacts"),
+
+newContact
+
+);
+
+setContacts((prev) => [
+
+...prev,
+
+newContact
+
+]);
+
+setName("");
+
+setPhone("");
+
+alert("Contact Saved");
+
+} catch (error) {
+
+console.log(error);
+
+alert("Failed to save contact");
+
+}
+
+};
+
+const makeCall = (number) => {
+
+window.location.href = `tel:${number}`;
+
+};
+
+const sendMessage = (number) => {
+
+navigator.geolocation.getCurrentPosition(
+
+(position) => {
+
+const lat =
+position.coords.latitude;
+
+const lng =
+position.coords.longitude;
+
+const message =
+
+`🚨 Emergency Help Needed 🚨
+
+My Live Location:
+https://maps.google.com/?q=${lat},${lng}
+
+Please help immediately.`;
+
+window.open(
+
+`https://wa.me/${number}?text=${encodeURIComponent(message)}`
+
+);
+
+},
+
+() => {
+
+alert("Location access denied");
+
+}
+
+);
+
+};
+
+return (
 
 <PageLayout
+
 title="Emergency Contacts"
-subtitle="Call emergency services or save trusted contacts."
+
+subtitle="Emergency services and personal safety contacts."
+
 >
 
-<div className="max-w-2xl mx-auto">
+<div className="w-full max-w-7xl mx-auto px-4 md:px-6">
 
-<div className="bg-[#0f172a] p-8 rounded-3xl border border-gray-800">
+{/* FORM */}
 
-<h2 className="text-3xl font-black mb-6">
+<div className="flex justify-center mb-14">
 
-Add Personal Contact
+<div className="w-full max-w-2xl bg-[#0f172a] border border-gray-800 rounded-[35px] p-8 md:p-10">
+
+<h2 className="text-3xl md:text-4xl font-black text-center mb-8">
+
+Add Personal Emergency Contact
 
 </h2>
+
+<div className="space-y-5">
 
 <input
 
 value={name}
 
-onChange={(e)=>setName(e.target.value)}
+onChange={(e)=>
+setName(e.target.value)
+}
 
 placeholder="Contact Name"
 
-className="w-full p-4 rounded-xl bg-[#020617] mb-4"
+className="w-full bg-[#020617] border border-gray-700 rounded-2xl px-5 py-4 outline-none focus:border-pink-500"
 
 />
 
@@ -69,21 +263,25 @@ className="w-full p-4 rounded-xl bg-[#020617] mb-4"
 
 value={phone}
 
-onChange={(e)=>setPhone(e.target.value)}
+onChange={(e)=>
+setPhone(e.target.value)
+}
 
 placeholder="Phone Number"
 
-className="w-full p-4 rounded-xl bg-[#020617]"
+className="w-full bg-[#020617] border border-gray-700 rounded-2xl px-5 py-4 outline-none focus:border-pink-500"
 
 />
 
 <button
 
-onClick={saveContact}
+onClick={addContact}
 
-className="w-full mt-6 bg-pink-500 py-4 rounded-xl font-bold"
+className="w-full bg-pink-500 hover:bg-pink-600 transition py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3"
 
 >
+
+<Plus size={22}/>
 
 Save Contact
 
@@ -91,29 +289,35 @@ Save Contact
 
 </div>
 
-<div className="mt-8 space-y-4">
+</div>
+
+</div>
+
+{/* CONTACTS GRID */}
+
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
 
 {
 
-contacts.map(
-
-(contact,index)=>(
+contacts.map((contact,index)=>(
 
 <div
 
 key={index}
 
-className="bg-[#0f172a] p-5 rounded-2xl"
+className="bg-[#0f172a] border border-gray-800 hover:border-pink-500 transition rounded-[35px] p-8 flex flex-col justify-between min-h-[280px]"
 
 >
 
-<h3>
+<div>
+
+<h2 className="text-3xl font-black break-words">
 
 {contact.name}
 
-</h3>
+</h2>
 
-<p>
+<p className="text-gray-400 text-xl mt-4">
 
 {contact.phone}
 
@@ -121,9 +325,45 @@ className="bg-[#0f172a] p-5 rounded-2xl"
 
 </div>
 
-)
+<div className="flex gap-4 mt-10">
 
-)
+<button
+
+onClick={()=>
+makeCall(contact.phone)
+}
+
+className="flex-1 bg-green-500 hover:bg-green-600 transition py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+
+>
+
+<Phone size={20}/>
+
+Call
+
+</button>
+
+<button
+
+onClick={()=>
+sendMessage(contact.phone)
+}
+
+className="flex-1 bg-blue-500 hover:bg-blue-600 transition py-4 rounded-2xl font-bold flex items-center justify-center gap-2"
+
+>
+
+<MessageCircle size={20}/>
+
+Message
+
+</button>
+
+</div>
+
+</div>
+
+))
 
 }
 
