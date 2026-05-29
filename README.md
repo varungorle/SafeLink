@@ -319,4 +319,4 @@ If you like this project, please give it a ⭐ on GitHub.
 
 🔗 SafeLink Live:
 
-:contentReference[oaicite:2]{index=2}
+https://safe-link-khaki.vercel.app
