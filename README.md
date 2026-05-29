@@ -260,12 +260,12 @@ vercel --prod
 Create `.env` file:
 
 ```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_API_KEY= "AIzaSyB3UcG_3kLZ7rVHIp1mXSeC8avEEduS3hM"
+VITE_FIREBASE_AUTH_DOMAIN= "safelink-b2a55.firebaseapp.com"
+VITE_FIREBASE_PROJECT_ID= "safelink-b2a55"
+VITE_FIREBASE_STORAGE_BUCKET= "safelink-b2a55.firebasestorage.app"
+VITE_FIREBASE_MESSAGING_SENDER_ID= "610080838574"
+VITE_FIREBASE_APP_ID= "1:610080838574:web:3b2e7bcb76f66bf35a2e3f"
 ```
 
 ---
